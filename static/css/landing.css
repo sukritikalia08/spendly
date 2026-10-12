@@ -74,6 +74,13 @@
 
 .hero-btn:hover { background: var(--accent); }
 
+button.hero-btn {
+    border: none;
+    font-family: var(--font-body);
+    line-height: inherit;
+    cursor: pointer;
+}
+
 /* Dashboard preview */
 
 .dash-window {
@@ -179,7 +186,62 @@
 .dash-bar-travel { background: #4a80d6; }
 .dash-bar-bills { background: #7c6fd3; }
 
+/* Video modal */
+
+.video-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(15, 15, 15, 0.75);
+}
+
+.video-modal[hidden] { display: none; }
+
+.video-modal-dialog {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+}
+
+.video-modal-frame {
+    aspect-ratio: 16 / 9;
+    background: #000000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.video-modal-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+}
+
+.video-modal-close {
+    position: absolute;
+    top: -2.75rem;
+    right: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.video-modal-close:hover { background: rgba(255, 255, 255, 0.3); }
+
 @media (max-width: 600px) {
+    .video-modal { padding: 1rem; }
     .landing-hero { padding: 3rem 1rem 3.5rem; }
     .hero-lede { font-size: 1.05rem; }
     .dash-stats { grid-template-columns: 1fr; }
