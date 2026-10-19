@@ -2,9 +2,14 @@ import sqlite3
 
 from flask import Flask, redirect, render_template, request, url_for
 
-from database.db import create_user, get_db, get_user_by_email, init_db, seed_db
+from database.db import create_user, get_user_by_email, init_db, seed_db
 
 app = Flask(__name__)
+
+
+# ------------------------------------------------------------------ #
+# Error messages                                                      #
+# ------------------------------------------------------------------ #
 
 ERR_MISSING_FIELDS = "Please fill in all fields."
 ERR_INVALID_EMAIL = "Please enter a valid email address."
