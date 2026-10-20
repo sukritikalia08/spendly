@@ -1,10 +1,21 @@
 import os
 import sqlite3
+from datetime import datetime
+from functools import wraps
 
 from flask import Flask, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
-from database.db import create_user, get_user_by_email, init_db, seed_db
+from database.db import (
+    create_user,
+    get_category_breakdown,
+    get_expense_summary,
+    get_recent_expenses,
+    get_user_by_email,
+    get_user_by_id,
+    init_db,
+    seed_db,
+)
 
 app = Flask(__name__)
 
@@ -34,6 +45,31 @@ ERR_INVALID_LOGIN = "Invalid email or password."
 def _valid_email(email):
     local, _, domain = email.partition("@")
     return email.count("@") == 1 and bool(local) and "." in domain
+
+
+def login_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get("user_id"):
+            return redirect(url_for("login"))
+        return view(*args, **kwargs)
+    return wrapped
+
+
+def _format_inr(amount):
+    return f"₹{amount:,.2f}"
+
+
+def _format_date(iso):
+    d = datetime.strptime(iso, "%Y-%m-%d")
+    return f"{d.day} {d:%b %Y}"
+
+
+def _format_member_since(created_at):
+    return datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S").strftime("%b %Y")
+
+
+app.add_template_filter(_format_inr, "inr")
 
 
 # ------------------------------------------------------------------ #
@@ -117,6 +153,39 @@ def logout():
     return redirect(url_for("landing"))
 
 
+@app.route("/profile")
+@login_required
+def profile():
+    user = get_user_by_id(session["user_id"])
+    if user is None:
+        session.clear()
+        return redirect(url_for("login"))
+
+    summary = get_expense_summary(user["id"])
+    # breakdown is empty when there are no expenses, so total is never 0 here
+    breakdown = [
+        {
+            "category": row["category"],
+            "total": row["total"],
+            "pct": round(row["total"] / summary["total"] * 100, 1),
+        }
+        for row in get_category_breakdown(user["id"])
+    ]
+    recent = [
+        {**dict(row), "date_display": _format_date(row["date"])}
+        for row in get_recent_expenses(user["id"])
+    ]
+
+    return render_template(
+        "profile.html",
+        user=user,
+        member_since=_format_member_since(user["created_at"]),
+        summary=summary,
+        breakdown=breakdown,
+        recent=recent,
+    )
+
+
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
@@ -130,11 +199,6 @@ def privacy():
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
-
-@app.route("/profile")
-def profile():
-    return "Profile page — coming in Step 4"
-
 
 @app.route("/expenses/add")
 def add_expense():
