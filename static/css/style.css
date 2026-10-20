@@ -19,6 +19,21 @@
     --border: #e4e1da;
     --border-soft: #eeebe4;
 
+    --cat-food: #2f7d55;
+    --cat-food-light: #e6f2eb;
+    --cat-transport: #5b7fa6;
+    --cat-transport-light: #e9eff6;
+    --cat-bills: #a8553a;
+    --cat-bills-light: #f8ebe5;
+    --cat-health: #2a8a8a;
+    --cat-health-light: #e3f3f2;
+    --cat-entertainment: #8b5e83;
+    --cat-entertainment-light: #f3eaf1;
+    --cat-shopping: #c17f24;
+    --cat-shopping-light: #fdf3e3;
+    --cat-other: #6b6b6b;
+    --cat-other-light: #efeeea;
+
     --font-display: 'DM Serif Display', Georgia, serif;
     --font-body: 'DM Sans', system-ui, sans-serif;
 
@@ -112,6 +127,9 @@ a { color: inherit; text-decoration: none; }
 }
 
 .nav-cta:hover { background: var(--accent) !important; }
+
+.nav-links .nav-user { color: var(--ink-soft); font-weight: 500; }
+.nav-links .nav-user:hover { color: var(--ink); }
 
 /* ------------------------------------------------------------------ */
 /* Main                                                                */
@@ -715,5 +733,6 @@ a { color: inherit; text-decoration: none; }
 
 @media (max-width: 600px) {
     .nav-links a:not(.nav-cta) { display: none; }
+    .nav-user { display: none; }
     .hero { padding: 3rem 1rem 2rem; }
 }

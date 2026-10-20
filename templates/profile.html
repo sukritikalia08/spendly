@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Profile · Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+{# ------------------------------------------------------------------ #}
+{# Temporary static data: overrides the route's values for design     #}
+{# work. Delete this block to show the user's real expenses again.    #}
+{# ------------------------------------------------------------------ #}
+{% set summary = {"total": 14400.0, "count": 24, "top_category": "Bills"} %}
+{% set breakdown = [
+    {"category": "Bills",         "total": 4850.0, "pct": 33.7},
+    {"category": "Food",          "total": 3420.0, "pct": 23.8},
+    {"category": "Shopping",      "total": 2760.0, "pct": 19.2},
+    {"category": "Transport",     "total": 1280.0, "pct": 8.9},
+    {"category": "Entertainment", "total": 950.0,  "pct": 6.6},
+    {"category": "Health",        "total": 740.0,  "pct": 5.1},
+    {"category": "Other",         "total": 400.0,  "pct": 2.8},
+] %}
+{% set recent = [
+    {"description": "Swiggy dinner order", "category": "Food",          "date_display": "18 Oct 2026", "amount": 420.0},
+    {"description": "Uber to airport",     "category": "Transport",     "date_display": "17 Oct 2026", "amount": 680.0},
+    {"description": "Broadband bill",      "category": "Bills",         "date_display": "15 Oct 2026", "amount": 999.0},
+    {"description": "Netflix",             "category": "Entertainment", "date_display": "12 Oct 2026", "amount": 649.0},
+    {"description": "",                    "category": "Shopping",      "date_display": "10 Oct 2026", "amount": 1850.0},
+] %}
+
+<section class="profile-section">
+    <div class="profile-container">
+
+        <header class="profile-card profile-header">
+            <div class="avatar" aria-hidden="true">{{ user.name[0] | upper }}</div>
+            <div class="profile-identity">
+                <h1 class="profile-name">{{ user.name }}</h1>
+                <p class="profile-email">{{ user.email }}</p>
+                <p class="profile-since">Member since {{ member_since }}</p>
+            </div>
+            <a href="{{ url_for('add_expense') }}" class="btn-primary profile-add">+ Add expense</a>
+        </header>
+
+        <div class="stat-grid">
+            <div class="profile-card stat-card">
+                <span class="stat-label">Total spent</span>
+                <span class="stat-value">{{ summary.total | inr }}</span>
+            </div>
+            <div class="profile-card stat-card">
+                <span class="stat-label">Expenses</span>
+                <span class="stat-value">{{ summary.count }}</span>
+            </div>
+            <div class="profile-card stat-card">
+                <span class="stat-label">Top category</span>
+                <span class="stat-value">{{ summary.top_category or "—" }}</span>
+            </div>
+        </div>
+
+        {% if summary.count == 0 %}
+        <div class="profile-card empty-state">
+            <span class="empty-icon" aria-hidden="true">◈</span>
+            <h2 class="empty-title">No expenses yet</h2>
+            <p class="empty-body">Add your first expense to see where your money goes.</p>
+            <a href="{{ url_for('add_expense') }}" class="btn-primary">Add your first expense</a>
+        </div>
+        {% else %}
+        <div class="profile-grid">
+
+            <section class="profile-card">
+                <h2 class="profile-card-title">Spending by category</h2>
+                <ul class="bar-list">
+                    {% for item in breakdown %}
+                    <li class="bar-row">
+                        <span class="bar-label">{{ item.category }}</span>
+                        <span class="bar-meta">
+                            <span class="amount">{{ item.total | inr }}</span>
+                            <span class="bar-pct">{{ item.pct }}%</span>
+                        </span>
+                        <div class="bar-track" role="img" aria-label="{{ item.category }}, {{ item.pct }}%">
+                            <div class="bar-fill cat-{{ item.category | lower }}" style="width: {{ item.pct }}%"></div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+            <section class="profile-card">
+                <h2 class="profile-card-title">Recent expenses</h2>
+                <ul class="recent-list">
+                    {% for e in recent %}
+                    <li class="recent-item">
+                        <div class="recent-main">
+                            <span class="recent-desc">{{ e.description or e.category }}</span>
+                            <span class="recent-meta">
+                                <span class="pill cat-{{ e.category | lower }}">{{ e.category }}</span>
+                                <span class="recent-date">{{ e.date_display }}</span>
+                            </span>
+                        </div>
+                        <span class="amount">{{ e.amount | inr }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}
