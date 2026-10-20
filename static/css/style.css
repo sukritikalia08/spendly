@@ -19,6 +19,21 @@
     --border: #e4e1da;
     --border-soft: #eeebe4;
 
+    --cat-food: #2f7d55;
+    --cat-food-light: #e6f2eb;
+    --cat-transport: #5b7fa6;
+    --cat-transport-light: #e9eff6;
+    --cat-bills: #a8553a;
+    --cat-bills-light: #f8ebe5;
+    --cat-health: #2a8a8a;
+    --cat-health-light: #e3f3f2;
+    --cat-entertainment: #8b5e83;
+    --cat-entertainment-light: #f3eaf1;
+    --cat-shopping: #c17f24;
+    --cat-shopping-light: #fdf3e3;
+    --cat-other: #6b6b6b;
+    --cat-other-light: #efeeea;
+
     --font-display: 'DM Serif Display', Georgia, serif;
     --font-body: 'DM Sans', system-ui, sans-serif;
 
