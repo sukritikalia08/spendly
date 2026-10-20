@@ -7,28 +7,6 @@
 {% endblock %}
 
 {% block content %}
-{# ------------------------------------------------------------------ #}
-{# Temporary static data: overrides the route's values for design     #}
-{# work. Delete this block to show the user's real expenses again.    #}
-{# ------------------------------------------------------------------ #}
-{% set summary = {"total": 14400.0, "count": 24, "top_category": "Bills"} %}
-{% set breakdown = [
-    {"category": "Bills",         "total": 4850.0, "pct": 33.7},
-    {"category": "Food",          "total": 3420.0, "pct": 23.8},
-    {"category": "Shopping",      "total": 2760.0, "pct": 19.2},
-    {"category": "Transport",     "total": 1280.0, "pct": 8.9},
-    {"category": "Entertainment", "total": 950.0,  "pct": 6.6},
-    {"category": "Health",        "total": 740.0,  "pct": 5.1},
-    {"category": "Other",         "total": 400.0,  "pct": 2.8},
-] %}
-{% set recent = [
-    {"description": "Swiggy dinner order", "category": "Food",          "date_display": "18 Oct 2026", "amount": 420.0},
-    {"description": "Uber to airport",     "category": "Transport",     "date_display": "17 Oct 2026", "amount": 680.0},
-    {"description": "Broadband bill",      "category": "Bills",         "date_display": "15 Oct 2026", "amount": 999.0},
-    {"description": "Netflix",             "category": "Entertainment", "date_display": "12 Oct 2026", "amount": 649.0},
-    {"description": "",                    "category": "Shopping",      "date_display": "10 Oct 2026", "amount": 1850.0},
-] %}
-
 <section class="profile-section">
     <div class="profile-container">
 

@@ -3,13 +3,14 @@ import sqlite3
 from datetime import datetime
 from functools import wraps
 
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash
 
 from database.db import (
     create_user,
     get_category_breakdown,
     get_expense_summary,
+    get_expenses,
     get_recent_expenses,
     get_user_by_email,
     get_user_by_id,
@@ -36,6 +37,7 @@ ERR_INVALID_EMAIL = "Please enter a valid email address."
 ERR_SHORT_PASSWORD = "Password must be at least 8 characters."
 ERR_DUPLICATE_EMAIL = "An account with that email already exists."
 ERR_INVALID_LOGIN = "Invalid email or password."
+ERR_NOT_SIGNED_IN = "Sign in required."
 
 
 # ------------------------------------------------------------------ #
@@ -54,6 +56,28 @@ def login_required(view):
             return redirect(url_for("login"))
         return view(*args, **kwargs)
     return wrapped
+
+
+def api_login_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get("user_id"):
+            return jsonify(error=ERR_NOT_SIGNED_IN), 401
+        return view(*args, **kwargs)
+    return wrapped
+
+
+def _category_breakdown(user_id, total):
+    # breakdown is empty when there are no expenses, so total is never 0 here
+    return [
+        {
+            "category": row["category"],
+            "total": row["total"],
+            "count": row["count"],
+            "pct": round(row["total"] / total * 100, 1),
+        }
+        for row in get_category_breakdown(user_id)
+    ]
 
 
 def _format_inr(amount):
@@ -162,15 +186,7 @@ def profile():
         return redirect(url_for("login"))
 
     summary = get_expense_summary(user["id"])
-    # breakdown is empty when there are no expenses, so total is never 0 here
-    breakdown = [
-        {
-            "category": row["category"],
-            "total": row["total"],
-            "pct": round(row["total"] / summary["total"] * 100, 1),
-        }
-        for row in get_category_breakdown(user["id"])
-    ]
+    breakdown = _category_breakdown(user["id"], summary["total"])
     recent = [
         {**dict(row), "date_display": _format_date(row["date"])}
         for row in get_recent_expenses(user["id"])
@@ -194,6 +210,63 @@ def terms():
 @app.route("/privacy")
 def privacy():
     return render_template("privacy.html")
+
+
+# ------------------------------------------------------------------ #
+# API: transaction history                                            #
+# ------------------------------------------------------------------ #
+
+@app.route("/api/expenses")
+@api_login_required
+def api_expenses():
+    try:
+        limit = int(request.args.get("limit", 20))
+        offset = int(request.args.get("offset", 0))
+    except ValueError:
+        return jsonify(error="limit and offset must be integers."), 400
+
+    if not 1 <= limit <= 100:
+        return jsonify(error="limit must be between 1 and 100."), 400
+    if offset < 0:
+        return jsonify(error="offset must be 0 or greater."), 400
+
+    user_id = session["user_id"]
+    rows = get_expenses(user_id, limit, offset)
+    total = get_expense_summary(user_id)["count"]
+
+    return jsonify(
+        expenses=[dict(row) for row in rows],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+# ------------------------------------------------------------------ #
+# API: summary stats                                                  #
+# ------------------------------------------------------------------ #
+
+@app.route("/api/summary")
+@api_login_required
+def api_summary():
+    summary = get_expense_summary(session["user_id"])
+    return jsonify(
+        total=summary["total"],
+        count=summary["count"],
+        top_category=summary["top_category"],
+    )
+
+
+# ------------------------------------------------------------------ #
+# API: category breakdown                                             #
+# ------------------------------------------------------------------ #
+
+@app.route("/api/categories")
+@api_login_required
+def api_categories():
+    user_id = session["user_id"]
+    summary = get_expense_summary(user_id)
+    return jsonify(categories=_category_breakdown(user_id, summary["total"]))
 
 
 # ------------------------------------------------------------------ #

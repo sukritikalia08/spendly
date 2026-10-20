@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from datetime import date
+from datetime import date, timedelta
 
 from werkzeug.security import generate_password_hash
 
@@ -158,6 +158,18 @@ def get_recent_expenses(user_id, limit=5):
         conn.close()
 
 
+def get_expenses(user_id, limit, offset):
+    conn = get_db()
+    try:
+        return conn.execute(
+            "SELECT id, amount, category, date, description FROM expenses "
+            "WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT ? OFFSET ?",
+            (user_id, limit, offset),
+        ).fetchall()
+    finally:
+        conn.close()
+
+
 # ------------------------------------------------------------------ #
 # Seed data                                                           #
 # ------------------------------------------------------------------ #
@@ -176,18 +188,18 @@ def seed_db():
 
         today = date.today()
 
-        def day(d):
-            return today.replace(day=d).isoformat()
+        def days_ago(n):
+            return (today - timedelta(days=n)).isoformat()
 
         expenses = [
-            (user_id, 450.0,  "Food",          day(1),  "Groceries"),
-            (user_id, 120.0,  "Transport",     day(4),  "Metro card top-up"),
-            (user_id, 1800.0, "Bills",         day(7),  "Electricity bill"),
-            (user_id, 650.0,  "Health",        day(10), "Pharmacy"),
-            (user_id, 500.0,  "Entertainment", day(13), "Movie tickets"),
-            (user_id, 2299.0, "Shopping",      day(16), "New shoes"),
-            (user_id, 300.0,  "Other",         day(19), "Gift wrapping"),
-            (user_id, 280.0,  "Food",          day(22), "Dinner out"),
+            (user_id, 450.0,  "Food",          days_ago(21), "Groceries"),
+            (user_id, 120.0,  "Transport",     days_ago(18), "Metro card top-up"),
+            (user_id, 1800.0, "Bills",         days_ago(15), "Electricity bill"),
+            (user_id, 650.0,  "Health",        days_ago(12), "Pharmacy"),
+            (user_id, 500.0,  "Entertainment", days_ago(9),  "Movie tickets"),
+            (user_id, 2299.0, "Shopping",      days_ago(6),  "New shoes"),
+            (user_id, 300.0,  "Other",         days_ago(3),  "Gift wrapping"),
+            (user_id, 280.0,  "Food",          days_ago(0),  "Dinner out"),
         ]
         conn.executemany(
             "INSERT INTO expenses (user_id, amount, category, date, description) "
